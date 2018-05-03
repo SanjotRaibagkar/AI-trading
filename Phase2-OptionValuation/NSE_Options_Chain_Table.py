@@ -8,9 +8,13 @@ from bs4 import BeautifulSoup
 #           "symbol=UBL&instrument=OPTSTK&date=-&segmentLink=17&segmentLink=17")
 #
 
-Base_url =("https://www.nseindia.com/live_market/dynaContent/"+
-           "live_watch/option_chain/optionKeys.jsp?symbolCode=-10003&symbol=NIFTY&"+
-           "symbol=NIFTY&instrument=OPTIDX&date=-&segmentLink=17&segmentLink=17")
+#Base_url =("https://www.nseindia.com/live_market/dynaContent/"+
+#           "live_watch/option_chain/optionKeys.jsp?symbolCode=-10003&symbol=NIFTY&"+
+#           "symbol=NIFTY&instrument=OPTIDX&date=-&segmentLink=17&segmentLink=17")
+
+Base_url = ("https://www.nseindia.com/live_market/dynaContent/"+
+            "live_watch/option_chain/optionKeys.jsp?symbolCode=-9999&symbol=BANKNIFTY&"+
+            "symbol=BANKNIFTY&instrument=OPTIDX&date=-&segmentLink=17&segmentLink=17")
 page = requests.get(Base_url)
 page.status_code
 page.content
