@@ -20,12 +20,12 @@ from nsepy.derivatives import get_expiry_date
 import numpy as np
 
 
-symbol='BANKNIFTY' 
+symbollist =['BANKNIFTY'] 
+symbol = symbollist[0]
 
-optionChain = pd.read_csv("Option_Chain_Table.csv")
 
 
-def getStartandEndDate(enddate,startdate,today = True,startbeforday =2):
+def getStartandEndDate(startdate,enddate,today = True,startbeforday =2):
     
     if today:
         end = date.today()
@@ -38,21 +38,19 @@ def getStartandEndDate(enddate,startdate,today = True,startbeforday =2):
     return start , end   
 
 
-start,end = getStartandEndDate (date (2018,5,4),date(2018,4,30) ,today=True,startbeforday=2)
+
 
 def getExpirydate(year,month, week,weekly, symbol):
     
     if symbol =='BANKNIFTY' and weekly:
-        expiry = date(year,month,3)
+        expiry = date(year,month,17)
     else :
         expiry = get_expiry_date(year=year, month=month)
     return expiry 
         
-
-
     
 
-def get_optionDataFromChain1(optionChain2, startDate, endDate,symbol,year,month, index,weekly):
+def get_optionDataFromChain(optionChain2, startDate, endDate,symbol,year,month, index,weekly= False):
     
     call_data_list = []
     put_data_list =[]
@@ -74,17 +72,12 @@ def get_optionDataFromChain1(optionChain2, startDate, endDate,symbol,year,month,
         put_data_list.append(putdata)
         l.append(calldata)
         l.append(putdata)
-    
-    
+
     result = pd.concat(l)
     return call_data_list, put_data_list,result
 
 
-optionseries = optionChain['Strike Price']
 
-
-calldatalist, putdatalist,calldataframe  = get_optionDataFromChain1(optionseries,start,end,symbol,2018,5,True, True)
-calldataframe.to_csv("merge.csv")
 
 
 def maxpain(c):
@@ -105,18 +98,44 @@ def maxpain(c):
     
     return c
 
-
-
+start,end = getStartandEndDate (date(2018,4,30),date (2018,5,4) ,today=True,startbeforday=2)
 date1= end +timedelta(days =-1)
-print(date1)
 
-a = calldataframe.groupby(calldataframe.index)
-b = a.get_group(date1)[['Strike Price','Option Type','Open Interest']]
-c = b.groupby(['Strike Price','Option Type'])[['Open Interest']].sum().unstack()
-c['callsum'] =0
-c['putsum'] =0
-r1 = maxpain(c)
-r1["totalpain"] = c['callsum']+c['putsum']
+def findmaxpain(symbol):
+    
+    optionChain = pd.read_csv(symbol +"_Option_Chain_Table.csv")
+    optionseries = optionChain['Strike Price']    
+    calldatalist, putdatalist,calldataframe  = get_optionDataFromChain(optionseries,start,end,symbol,2018,5,True, weekly =False)
+    #calldataframe.to_csv("merge.csv")       
+    print(date1)    
+    a = calldataframe.groupby(calldataframe.index)
+    b = a.get_group(date1)[['Strike Price','Option Type','Open Interest']]
+    c = b.groupby(['Strike Price','Option Type'])[['Open Interest']].sum().unstack()
+    c['callsum'] =0
+    c['putsum'] =0
+    r1 = maxpain(c)
+    r1["totalpain"] = c['callsum']+c['putsum']
+    
+   # print(r1.loc[r1["totalpain"].idxmin()])
+    return r1.loc[r1["totalpain"].idxmin()],r1,calldataframe
 
-print(r1.loc[r1["totalpain"].idxmin()])
+maximum = "MAX"
+minimum = "MIN"
+pe = "PE"
+ce = "CE"
+
+for symbol in symbollist:
+    val,r1 , calldataform = findmaxpain(symbol)    
+    maxpainTabel = {symbol:val.name}
+    openintrestTabel = {symbol+maximum+ce :r1.loc[r1['Open Interest'][ce].idxmax()].name,
+                        symbol+minimum+ce :r1.loc[r1['Open Interest'][ce].idxmin()].name , 
+                        symbol+maximum+pe :r1.loc[r1['Open Interest'][pe].idxmax()].name,
+                        symbol+minimum+pe :r1.loc[r1['Open Interest'][pe].idxmin()].name                        }
+    #print(r1)
+    
+
+print("maxpainTabel",maxpainTabel)
+print("openIntrest" ,openintrestTabel)
+
+
 
