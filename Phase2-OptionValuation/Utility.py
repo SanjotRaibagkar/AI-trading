@@ -38,5 +38,26 @@ def getExpirydate(year,month, week,weekly, symbol):
     else :
         expiry = get_expiry_date(year=year, month=month)
     return expiry 
+
+
+
+## Get Data from nse if not avialalbe at local
+import os.path
+def getData(Symbol,startdate, enddate,index= True,futures=True,):
+    
+    fname = Symbol+ "_symbolData.csv"
+    if os.path.exists(fname) :       
+        data = pd.read_csv(fname,index_col ='Date')
+        print("got it")
+    else :  
+        data = get_history(symbol=Symbol,
+                            start=startdate,
+                            end=enddate,
+                            index=index,
+                            futures=futures,)
+        data.to_csv(Symbol+ "_symbolData.csv")
         
+    return data   
+        
+
    

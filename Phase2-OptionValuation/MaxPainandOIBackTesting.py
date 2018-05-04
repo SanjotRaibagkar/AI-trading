@@ -26,6 +26,7 @@ from matplotlib import pyplot as plt
 import datetime
 from nsepy.derivatives import get_expiry_date
 import numpy as np
+from utility import *
 
 
 symbollist =['BANKNIFTY','NIFTY'] 
@@ -130,23 +131,27 @@ date1= end +timedelta(days =-1)
 def buildDataSet(symbol):
     import os.path
     fname = "1-YR-Data.csv"
-    if path.exists(fame) :       
+    if os.path.exists(fname) :       
         oneyrData = pd.read_csv(fname)
     else :    
 
         optionChain = pd.read_csv(symbol +"_Option_Chain_Table.csv")
         optionseries = optionChain['Strike Price'] 
-        for i in range(1,7):
-            calldatalist, putdatalist,calldataframe = get_optionDataFromChain(optionseries,start,end,symbol,2018,i,True, weekly =False)
+        for j in range(2017,2018):
+            for i in range(1,13):
+                calldatalist, putdatalist,calldataframe = get_optionDataFromChain(optionseries,start,end,symbol,j,i,True, weekly =False)
+
+
+
 for symbol in symbollist:
     buildDataSet(symbol)
     
 resultData = pd.concat(l)
 resultData.to_csv("1-YR-Data.csv") 
+   
 
 
-
-def analysisData(resultData):
+def maxPainForAllData(resultData):
     maxpainlist= {}
     maxpain1 =[]
     
@@ -166,40 +171,48 @@ def analysisData(resultData):
     maxPainFrame = pd.DataFrame(painlist, columns=["Symbol","Expiry",'Date','maxpain','OI_CE_MAX','OI_CE_MIN','OI_PE_MAX','OI_PE_MIN'])        
     return maxpainlist,maxPainFrame 
          
-maxpainList, painFrame = analysisData(resultData)  
-
-k#ey = ("BANKNIFTY",datetime.date(2018, 4, 26),datetime.date(2018, 4, 25))
-
-
-
-print(r1)
 
 
 
 
 
 
-#maximum = "MAX"
-#minimum = "MIN"
-#pe = "PE"
-#ce = "CE"
-#
-#for symbol in symbollist:
-#    val,r1 , calldataform = findmaxpain(symbol)    
-#    maxpainTabel = {symbol:val.name}
-#    openintrestTabel = {symbol+maximum+ce :r1.loc[r1['Open Interest'][ce].idxmax()].name,
-#                        symbol+minimum+ce :r1.loc[r1['Open Interest'][ce].idxmin()].name , 
-#                        symbol+maximum+pe :r1.loc[r1['Open Interest'][pe].idxmax()].name,
-#                        symbol+minimum+pe :r1.loc[r1['Open Interest'][pe].idxmin()].name                        }
-#    #print(r1)
-#    
-#
-#print("maxpainTabel",maxpainTabel)
-#print("openIntrest" ,openintrestTabel)
+
+def compareMaxPainWithClose(symbol,start, end, index = True):
+    data1 = getData(symbol,start,end) 
     
- for name,group in a:
-     tub = name
-     break
+    try:
+        maxpainList, painFrame = analysisData(resultData)  
+        for exp in painFrame.Expiry.unique():
+            print(exp)
+            datadate = exp +timedelta(days =-1)
+            print(exp,datadate)
+    #        a= painFrame[(painFrame['Expiry']==datetime.date(2018, 4, 26)) &(painFrame['Date']==datetime.date(2018, 4, 24))&(painFrame['Symbol']=='NIFTY' )]
+            a =painFrame[(painFrame['Expiry']==exp) &(painFrame['Date']==datadate)&(painFrame['Symbol']=='NIFTY' )]
+            print("Compate " ,a.maxpain.values[0],'---',a.OI_CE_MAX.values[0],'--',a.OI_CE_MIN.values[0],'--',data1.loc[str(datadate)].Close)
+            
+    except:
+        print('error')
+    return data1
+    
+    
+
+    
+data1 = compareMaxPainWithClose  ('NIFTY', start,end)
         
+    
+        
+
+
+#key = ("BANKNIFTY",datetime.date(2018, 4, 26),datetime.date(2018, 4, 25))
+
+
+
+
+
+
+
+
+
 
 
