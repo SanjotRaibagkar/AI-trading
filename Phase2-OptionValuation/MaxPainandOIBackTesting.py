@@ -147,20 +147,37 @@ resultData.to_csv("1-YR-Data.csv")
 
 
 def analysisData(resultData):
-    maxpainlist= []
-    a = resultData.groupby([resultData["Expiry"],resultData.index])
+    maxpainlist= {}
+    maxpain1 =[]
+    
+    a = resultData.groupby([resultData['Symbol'],resultData["Expiry"],resultData.index])    
     for name,group in a:
         c =group.groupby(['Strike Price','Option Type'])[['Open Interest']].sum().unstack()
         c['callsum'] =0
         c['putsum'] =0
         r1 = maxpain(c)
         r1["totalpain"] = c['callsum']+c['putsum']
-        maxpainlist.append(r1)
-    return maxpainlist    
-        
-        
- 
-maxpainList = analysisData(resultData)  
+        maxpainlist.update({name:r1})
+        maxpain1.append([name[0],name[1],name[2],(r1.loc[r1["totalpain"].idxmin()]).name,
+                         r1.loc[r1['Open Interest']["CE"].idxmax()].name,
+                         r1.loc[r1['Open Interest']["CE"].idxmin()].name,
+                         r1.loc[r1['Open Interest']["PE"].idxmax()].name,
+                         r1.loc[r1['Open Interest']["PE"].idxmin()].name ])               
+    maxPainFrame = pd.DataFrame(painlist, columns=["Symbol","Expiry",'Date','maxpain','OI_CE_MAX','OI_CE_MIN','OI_PE_MAX','OI_PE_MIN'])        
+    return maxpainlist,maxPainFrame 
+         
+maxpainList, painFrame = analysisData(resultData)  
+
+k#ey = ("BANKNIFTY",datetime.date(2018, 4, 26),datetime.date(2018, 4, 25))
+
+
+
+print(r1)
+
+
+
+
+
 
 #maximum = "MAX"
 #minimum = "MIN"

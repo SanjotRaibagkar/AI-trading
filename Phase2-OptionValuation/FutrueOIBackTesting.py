@@ -17,3 +17,4 @@ import numpy as np
 
 symbollist =['BANKNIFTY','NIFTY'] 
 symbol = symbollist[0]
+
