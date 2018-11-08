@@ -59,7 +59,42 @@ def plot_candlestic(dataframe, stock_name):
     plt.rc('axes', grid=True)
     plt.rc('grid', color='0.75', linestyle='-', linewidth=0.5)
     plt.show()
+
+def plot_candlestic_with_extrema(dataframe, peak_indices, trough_indices, stock_name):
     
+    fig, ax = plt.subplots(figsize = (16,7))
+    fig.subplots_adjust(bottom=0.2)
+
+    quotes = zip(mdates.date2num(dataframe.index.to_pydatetime()),dataframe[u'Open Price'], 
+                     dataframe[u'High Price'],dataframe[u'Low Price'], dataframe[u'Close Price'])
+    low_price_seq = dataframe['Low Price'].values
+    high_price_seq = dataframe['High Price'].values
+    
+    candlestick_ohlc(ax,quotes,width=0.75,colorup='g',colordown='red',alpha=0.6)
+    
+    plt.plot(dataframe.index[peak_indices], pd.Series(high_price_seq,index=dataframe.index)[peak_indices], "v", color='black')
+    plt.plot(dataframe.index[trough_indices], pd.Series(low_price_seq,index=dataframe.index)[trough_indices], "^", color='blue')
+    
+    ax.xaxis_date()
+    ax.legend([stock_name],loc='upper right', shadow=True, fancybox=True)
+    ax.autoscale_view()
+    plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
+
+    plt.rc('axes', grid=True)
+    plt.rc('grid', color='0.75', linestyle='-', linewidth=0.5)
+    plt.show()
+    
+    
+def get_trough_indices(dataframe):
+    low_price_seq = dataframe['Low Price'].values
+    trough_indices = get_troughs(low_price_seq)
+    return trough_indices    
+
+def get_peak_indices(dataframe):
+    high_price_seq = dataframe['High Price'].values
+    peak_indices = get_peaks(high_price_seq)
+    return peak_indices    
+
 def get_peaks(price_seq):
     peaks,peaks_properties = find_peaks(price_seq,distance=1,prominence=5)
     return peaks
@@ -116,4 +151,24 @@ def get_trend_data(dataframe):
     trend_data = trend_data.fillna(method='bfill')
     
     trend_data['trend'] = trend_data.apply(lambda row: get_trend_label(row['high_slope'], row['low_slope']), axis=1)
-    return trend_data    
+    return trend_data 
+
+def get_ma_slope(price_series, ma_period = 8, slope_period = 8):
+    ma_series = price_series.rolling(ma_period).mean()[-slope_period:]
+    y1 = ma_series[0]
+    y2 = ma_series[slope_period-1]
+    return (((y2-y1)/y1)*100)/slope_period
+
+def get_medium_trend(sample_data):
+    medium_term_trend = get_ma_slope(sample_data['Close Price'],ma_period=20,slope_period=8)
+    
+    if medium_term_trend < 0.25 and medium_term_trend > -0.25:
+        trend = 'sideways'
+    elif medium_term_trend <= -0.25:
+        trend = 'bearish'
+    elif medium_term_trend >= 0.25:
+        trend = 'bullish'
+    else:
+        trend = 'indeterminate' 
+    
+    return trend
