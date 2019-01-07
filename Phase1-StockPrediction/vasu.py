@@ -96,12 +96,14 @@ def get_peak_indices(dataframe):
     return peak_indices    
 
 def get_peaks(price_seq):
-    peaks,peaks_properties = find_peaks(price_seq,distance=1,prominence=5)
+    threshold_val = np.mean(price_seq)*0.01
+    peaks,peaks_properties = find_peaks(price_seq,distance=4,prominence=5)
     return peaks
 
 def get_troughs(price_seq):
     price_seq_inv = price_seq*-1
-    troughs,troughs_properties = find_peaks(price_seq_inv,distance=1,prominence=5)
+    threshold_val = np.mean(price_seq)*0.01
+    troughs,troughs_properties = find_peaks(price_seq_inv,distance=4,prominence=5)
     return troughs
 
 def get_slope(x,y):

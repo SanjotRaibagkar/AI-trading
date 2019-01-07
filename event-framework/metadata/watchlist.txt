@@ -1,0 +1,4 @@
+stock_code,stock_name
+500875,ITC
+507685,WIPRO
+532215,AXIS BANK
